@@ -1,0 +1,62 @@
+﻿@page "/fetchdata"
+@using SerilogDemo1.Shared
+@inject HttpClient Http
+
+<PageTitle>Weather forecast</PageTitle>
+
+<h1>Weather forecast</h1>
+
+<p>This component demonstrates fetching data from the server.</p>
+
+@if (forecasts == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Date</th>
+                <th>Temp. (C)</th>
+                <th>Temp. (F)</th>
+                <th>Summary</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var forecast in forecasts)
+            {
+                <tr>
+                    <td>@forecast.Date.ToShortDateString()</td>
+                    <td>@forecast.TemperatureC</td>
+                    <td>@forecast.TemperatureF</td>
+                    <td>@forecast.Summary</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    private WeatherForecast[]? forecasts;
+    protected ErrorLog errorLog = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            forecasts = await Http.GetFromJsonAsync<WeatherForecast[]>("WeatherForecast");
+            int num1 = 0;
+            int num2 = 5;
+            int result = num2 / num1;
+        }
+        catch (Exception ex)
+        {
+            //we are saving log message in database
+            errorLog.Title = "FetchData Page";
+            errorLog.ErrorPage = "Api Call error message";
+            errorLog.ErrorStackTrace = ex.Message;
+            var result = await Http.PostAsJsonAsync("Log", errorLog);
+        }
+    }
+}
